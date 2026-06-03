@@ -46,7 +46,7 @@ if (timerPauseBtn) {
 
 if (timerStopBtn) {
     timerStopBtn.addEventListener('click', function() {
-        const confirmStop = confirm("오늘 자습을 정말 종료하시겠습니까? 학습 시간이 최종 저장됩니다.");
+        const confirmStop = confirm("오늘 자습을 정말 종료하시겠습니까? 학습 시간이 서버에 최종 저장됩니다.");
         
         if (confirmStop) {
             isRunning = false;
@@ -56,7 +56,7 @@ if (timerStopBtn) {
             timerMessage.style.color = "#333333";
             timerMessage.innerText = `🏁 오늘 총 학습 시간 [ ${finalTimeText} ] 기록 완료!`;
 
-            // 🔥 발급받은 고유 키를 추적해 정확한 내 서랍 칸에 시간 업데이트
+            // 유실 해결책: 브라우저 세션에 저장된 고유 키를 기반으로 구글 실시간 서버의 정확한 학생 노드에만 시간 업데이트
             const sessionData = JSON.parse(localStorage.getItem('currentStudentSession'));
 
             if (sessionData && sessionData.date && sessionData.uniqueKey) {
@@ -75,4 +75,3 @@ if (timerStopBtn) {
         }
     });
 }
-
