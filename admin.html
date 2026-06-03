@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        .admin-container { max-width: 850px; }
+        .admin-container { max-width: 950px; }
         .refresh-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .server-status { font-size:13px; color:#00a400; font-weight:bold; background-color:#e6f9e6; padding:6px 12px; border-radius:20px; }
         .status-table { width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #ffffff; font-size: 14px; text-align: center; }
@@ -25,7 +25,7 @@
     <div class="app-container admin-container">
         <header>
             <h1>👨‍🏫 자율학습 관리자 대시보드 V2</h1>
-            <p class="date-text">새로운 클라우드(study-manager2) 기반 실시간 자습 현황입니다.</p>
+            <p class="date-text">새로운 클라우드(study-manager2) 기반 전교생 실시간 데이터 자습 모니터링 판넬입니다.</p>
         </header>
 
         <main class="form-section">
@@ -43,12 +43,13 @@
                         <th>신청 교시</th>
                         <th>출석 상태</th>
                         <th>총 학습 시간</th>
+                        <th>사진 인증</th>
                         <th>비고 (불참 사유)</th>
                     </tr>
                 </thead>
                 <tbody id="student-list-body">
                     <tr>
-                        <td colspan="7" class="no-data">실시간 데이터를 불러오는 중...</td>
+                        <td colspan="8" class="no-data">실시간 데이터를 불러오는 중...</td>
                     </tr>
                 </tbody>
             </table>
@@ -75,13 +76,13 @@
         }
         const database = firebase.database();
 
-        // 고유 랜덤 키 구조 하위 데이터 안전 순회 파싱
+        // 고유 push ID 서랍 내부를 전부 훑어서 유연하게 리스트화하는 가동 로직
         database.ref('students/').on('value', (snapshot) => {
             const tableBody = document.getElementById('student-list-body');
             const serverData = snapshot.val();
             
             if (!serverData) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="no-data">누적된 학생 출석 기록이 없습니다.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="8" class="no-data">누적된 학생 출석 기록이 없습니다.</td></tr>`;
                 return;
             }
 
@@ -94,7 +95,7 @@
                 });
             });
 
-            // 최신 날짜 우선 정렬 -> 학번 정렬
+            // 최신 날짜 우선 정렬 -> 동일 날짜 내에서는 학번 정렬 순서 보정
             allStudentsList.sort((a, b) => {
                 if (b.date !== a.date) return new Date(b.date) - new Date(a.date);
                 return a.id.localeCompare(b.id);
@@ -104,6 +105,7 @@
             allStudentsList.forEach(student => {
                 let statusText = student.isAbsent ? "❌ 불참" : `✔️ 출석 (${student.authTime})`;
                 let statusClass = student.isAbsent ? "text-absent" : "text-success";
+                let photoStatus = student.isPhotoVerified ? student.isPhotoVerified : "❌ 미인증";
                 
                 htmlContent += `
                     <tr>
@@ -113,6 +115,7 @@
                         <td>${student.session}</td>
                         <td class="${statusClass}">${statusText}</td>
                         <td>⏱️ ${student.studyTime}</td>
+                        <td>${photoStatus}</td>
                         <td>${student.reason}</td>
                     </tr>
                 `;
@@ -123,4 +126,3 @@
     </script>
 </body>
 </html>
-
