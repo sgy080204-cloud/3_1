@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고3 자율학습 관리 시스템 V2</title>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>✏️ 고3 자습 관리 시스템</h1>
+            <p id="date-display" class="date-text">날짜를 불러오는 중...</p>
+            <p id="time-display" class="time-text">00:00:00</p>
+        </header>
+
+        <main>
+            <section id="auth-section" class="form-section">
+                <h2>📅 출석 체크</h2>
+                
+                <div class="input-group">
+                    <label for="student-id">학번</label>
+                    <input type="number" id="student-id" placeholder="예: 30101">
+                </div>
+                
+                <div class="input-group">
+                    <label for="student-name">이름</label>
+                    <input type="text" id="student-name" placeholder="이름을 입력하세요">
+                </div>
+
+                <div class="session-group">
+                    <label class="group-title">자습 교시 선택</label>
+                    <label class="radio-label">
+                        <input type="radio" name="session" value="방과후" checked> 방과후 자율학습
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="session" value="야자"> 야간 자율학습
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="session" value="학교 외 자습"> 학교 외 자습
+                    </label>
+                </div>
+
+                <div class="absence-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="absence-check"> 오늘 자습에 불참합니다.
+                    </label>
+                    <div id="reason-container" class="hidden">
+                        <input type="text" id="absence-reason" placeholder="사유를 입력하세요 (예: 병원 진료)">
+                    </div>
+                </div>
+
+                <button id="submit-auth-btn" class="btn btn-primary">출석 및 상태 제출</button>
+                <p id="auth-message" class="message-text"></p>
+            </section>
+
+            <section id="study-section" class="form-section hidden">
+                <div class="user-welcome">
+                    <span id="welcome-user">홍길동</span> 학생, 열공하세요!
+                </div>
+
+                <div class="timer-box">
+                    <h3>⏱️ 학습 시간 기록</h3>
+                    <div id="timer-display">00:00:00</div>
+                    <div class="timer-controls">
+                        <button id="timer-start-btn" class="btn btn-success">학습 시작</button>
+                        <button id="timer-pause-btn" class="btn btn-warning" disabled>잠시 멈춤</button>
+                        <button id="timer-stop-btn" class="btn btn-danger" disabled>학습 종료</button>
+                    </div>
+                    <p id="timer-message" class="message-text"></p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="timer.js"></script>
+</body>
+</html>
+
