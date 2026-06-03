@@ -71,12 +71,26 @@
                     </div>
                     <p id="timer-message" class="message-text"></p>
                 </div>
+
+                <div class="upload-box" style="margin-top: 25px;">
+                    <h3>📸 실시간 사진 인증</h3>
+                    <p class="upload-notice">오늘 공부하는 모습을 사진으로 인증해 주세요.</p>
+                    
+                    <input type="file" id="photo-file" accept="image/*" class="file-input">
+                    <div id="preview-container" class="hidden">
+                        <img id="photo-preview" src="" alt="인증 사진 미리보기" style="max-width:100%; margin-top:10px; border-radius:8px;">
+                    </div>
+
+                    <button id="submit-photo-btn" class="btn btn-primary" style="margin-top:10px;">사진 인증 완료</button>
+                    <p id="upload-message" class="message-text"></p>
+                </div>
             </section>
         </main>
     </div>
 
     <script src="auth.js"></script>
     <script src="timer.js"></script>
+    <script src="upload.js"></script>
 </body>
 </html>
 
