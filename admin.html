@@ -11,13 +11,33 @@
         .admin-container { max-width: 950px; }
         .refresh-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .server-status { font-size:13px; color:#00a400; font-weight:bold; background-color:#e6f9e6; padding:6px 12px; border-radius:20px; }
+        
+        /* 🗑️ 초기화 버튼 전용 디자인 */
+        .btn-danger-clear { 
+            background-color: #ff3b30; 
+            color: white; 
+            padding: 10px 20px; 
+            font-size: 14px; 
+            width: auto; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn-danger-clear:hover { background-color: #dc3545; }
+
         .status-table { width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #ffffff; font-size: 14px; text-align: center; }
         .status-table th, .status-table td { border: 1px solid #e4e6eb; padding: 12px 8px; }
         .status-table th { background-color: #f7f8fa; color: #4b4c4f; font-weight: bold; }
         .status-table tr:hover { background-color: #f2f3f5; }
-        .text-absent { color: #fa3e3e; font-weight: bold; }
-        .text-success { color: #00a400; font-weight: bold; }
+        .text-absent { color: #ff3b30; font-weight: bold; }
+        .text-success { color: #34c759; font-weight: bold; }
         .no-data { color: #8a8d91; padding: 30px !important; font-style: italic; }
+        
+        .admin-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid #e4e6eb; padding-top: 15px; }
+        .back-link { font-size: 14px; color: #007aff; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -53,6 +73,11 @@
                     </tr>
                 </tbody>
             </table>
+
+            <div class="admin-footer">
+                <a href="index.html" class="back-link">⬅️ 학생 화면(메인)으로 이동</a>
+                <button id="clear-btn" class="btn-danger-clear">🗑️ 전체 데이터 초기화</button>
+            </div>
         </main>
     </div>
 
@@ -76,7 +101,9 @@
         }
         const database = firebase.database();
 
-        // 고유 push ID 서랍 내부를 전부 훑어서 유연하게 리스트화하는 가동 로직
+        // ==========================================
+        // 1. 실시간 데이터 파싱 및 뷰어 반영
+        // ==========================================
         database.ref('students/').on('value', (snapshot) => {
             const tableBody = document.getElementById('student-list-body');
             const serverData = snapshot.val();
@@ -88,6 +115,7 @@
 
             let allStudentsList = [];
 
+            // 고유 식별자(Push ID) 노드를 순회하여 일렬 배열로 통합
             Object.keys(serverData).forEach(dateKey => {
                 const dayGroup = serverData[dateKey];
                 Object.keys(dayGroup).forEach(uniqueKey => {
@@ -95,7 +123,7 @@
                 });
             });
 
-            // 최신 날짜 우선 정렬 -> 동일 날짜 내에서는 학번 정렬 순서 보정
+            // 정렬: 최신 날짜 우선 -> 동일 날짜 내에서는 학번 순서로 정렬
             allStudentsList.sort((a, b) => {
                 if (b.date !== a.date) return new Date(b.date) - new Date(a.date);
                 return a.id.localeCompare(b.id);
@@ -122,6 +150,28 @@
             });
 
             tableBody.innerHTML = htmlContent;
+        });
+
+        // ==========================================
+        // 2. 🚨 전체 데이터 초기화 기능 (다시 복구 완료)
+        // ==========================================
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            // 실수 방지를 위한 2중 확인 경고창
+            const firstCheck = confirm("🚨 경고!\n새로운 Firebase 프로젝트('study-manager2')에 저장된 '모든 날짜의 학생 출석 및 자습 데이터'가 영구 삭제됩니다.\n\n정말 데이터베이스를 초기화하시겠습니까?");
+            
+            if (firstCheck) {
+                const secondCheck = confirm("정말로 삭제합니까? 이 작업은 되돌릴 수 없습니다.");
+                
+                if (secondCheck) {
+                    database.ref('students/').remove()
+                    .then(() => {
+                        alert("🎉 구글 실시간 클라우드 서버의 데이터가 깨끗하게 초기화되었습니다!");
+                    })
+                    .catch((error) => {
+                        alert("초기화 실패: 규칙(Rule) 설정이나 권한을 확인하세요.\n에러 내용: " + error.message);
+                    });
+                }
+            }
         });
     </script>
 </body>
