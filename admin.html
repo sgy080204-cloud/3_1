@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자율학습 관리자 대시보드 V2</title>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 850px; }
+        .refresh-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .server-status { font-size:13px; color:#00a400; font-weight:bold; background-color:#e6f9e6; padding:6px 12px; border-radius:20px; }
+        .status-table { width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #ffffff; font-size: 14px; text-align: center; }
+        .status-table th, .status-table td { border: 1px solid #e4e6eb; padding: 12px 8px; }
+        .status-table th { background-color: #f7f8fa; color: #4b4c4f; font-weight: bold; }
+        .status-table tr:hover { background-color: #f2f3f5; }
+        .text-absent { color: #fa3e3e; font-weight: bold; }
+        .text-success { color: #00a400; font-weight: bold; }
+        .no-data { color: #8a8d91; padding: 30px !important; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container admin-container">
+        <header>
+            <h1>👨‍🏫 자율학습 관리자 대시보드 V2</h1>
+            <p class="date-text">새로운 클라우드(study-manager2) 기반 실시간 자습 현황입니다.</p>
+        </header>
+
+        <main class="form-section">
+            <div class="refresh-box">
+                <h2>📋 전교생 실시간 자습 기록판</h2>
+                <div class="server-status">🟢 구글 클라우드 연결됨</div>
+            </div>
+
+            <table class="status-table">
+                <thead>
+                    <tr>
+                        <th>날짜</th>
+                        <th>학번</th>
+                        <th>이름</th>
+                        <th>신청 교시</th>
+                        <th>출석 상태</th>
+                        <th>총 학습 시간</th>
+                        <th>비고 (불참 사유)</th>
+                    </tr>
+                </thead>
+                <tbody id="student-list-body">
+                    <tr>
+                        <td colspan="7" class="no-data">실시간 데이터를 불러오는 중...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // 구글 Firebase 설정 동기화
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRA0-DGtm1FnoKpKwGQ5p8xMVeil1b2qg",
+            authDomain: "study-manager2.firebaseapp.com",
+            databaseURL: "https://study-manager2-default-rtdb.firebaseio.com",
+            projectId: "study-manager2",
+            storageBucket: "study-manager2.firebasestorage.app",
+            messagingSenderId: "568494942596",
+            appId: "1:568494942596:web:53222c11cfe7b6f3c395d1",
+            measurementId: "G-Z1YWS6TTM7"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // 고유 랜덤 키 구조 하위 데이터 안전 순회 파싱
+        database.ref('students/').on('value', (snapshot) => {
+            const tableBody = document.getElementById('student-list-body');
+            const serverData = snapshot.val();
+            
+            if (!serverData) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="no-data">누적된 학생 출석 기록이 없습니다.</td></tr>`;
+                return;
+            }
+
+            let allStudentsList = [];
+
+            Object.keys(serverData).forEach(dateKey => {
+                const dayGroup = serverData[dateKey];
+                Object.keys(dayGroup).forEach(uniqueKey => {
+                    allStudentsList.push(dayGroup[uniqueKey]);
+                });
+            });
+
+            // 최신 날짜 우선 정렬 -> 학번 정렬
+            allStudentsList.sort((a, b) => {
+                if (b.date !== a.date) return new Date(b.date) - new Date(a.date);
+                return a.id.localeCompare(b.id);
+            });
+
+            let htmlContent = "";
+            allStudentsList.forEach(student => {
+                let statusText = student.isAbsent ? "❌ 불참" : `✔️ 출석 (${student.authTime})`;
+                let statusClass = student.isAbsent ? "text-absent" : "text-success";
+                
+                htmlContent += `
+                    <tr>
+                        <td><strong>${student.date}</strong></td>
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.session}</td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>⏱️ ${student.studyTime}</td>
+                        <td>${student.reason}</td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = htmlContent;
+        });
+    </script>
+</body>
+</html>
+
