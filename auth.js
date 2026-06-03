@@ -53,7 +53,7 @@ if (absenceCheck && reasonContainer) {
 }
 
 // ==========================================
-// 3. 상태 제출 및 고유 열쇠(Push Key) 발급 (덮어쓰기 완전 해결)
+// 3. 상태 제출 및 고유 열쇠(Push Key) 발급 (덮어쓰기 버그 완전 차단)
 // ==========================================
 const submitAuthBtn = document.getElementById('submit-auth-btn');
 const authMessage = document.getElementById('auth-message');
@@ -85,7 +85,7 @@ if (submitAuthBtn) {
         const today = new Date();
         const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-        // 🔥 덮어쓰기 방지 핵심: push()를 사용하여 각 제출마다 고유 ID 생성
+        // 덮어쓰기 해결책: push()를 활용해 같은 날짜/학번이라도 데이터가 누적되도록 독립 노드 생성
         const newRecordRef = database.ref('students/' + dateKey).push();
         const uniqueKey = newRecordRef.key; 
 
@@ -98,12 +98,13 @@ if (submitAuthBtn) {
             isAbsent: isAbsent,
             reason: isAbsent ? reason : "-",
             authTime: currentTime,
-            studyTime: "00:00:00"
+            studyTime: "00:00:00",
+            isPhotoVerified: "❌ 미인증"
         };
 
         newRecordRef.set(studentStatus)
         .then(() => {
-            // 타이머 스크립트가 추적할 수 있도록 로컬 스토리지에 고유 정보 보관
+            // 다른 파일(timer.js, upload.js)이 추적할 수 있도록 고유 키 정보를 로컬 브라우저에 임시 세션 저장
             localStorage.setItem('currentStudentSession', JSON.stringify({ date: dateKey, uniqueKey: uniqueKey }));
 
             if (isAbsent) {
@@ -125,4 +126,3 @@ if (submitAuthBtn) {
         });
     });
 }
-
